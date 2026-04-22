@@ -11,8 +11,25 @@ from keyboards import (
     packages_kb, proceed_payment_kb, forex_join_kb, forex_proceed_payment_kb,
     member_start_kb,
 )
+from user_msg_tracker import pop_all as _pop_user_msgs, add_id as _track_user_msg
 
 router = Router()
+
+
+async def _wipe_chat(callback: CallbackQuery) -> None:
+    """Delete all tracked bot messages in this chat plus the current one."""
+    chat_id = callback.message.chat.id
+    ids = _pop_user_msgs(chat_id)
+    ids.append(callback.message.message_id)
+    seen: set[int] = set()
+    for mid in ids:
+        if mid in seen:
+            continue
+        seen.add(mid)
+        try:
+            await callback.bot.delete_message(chat_id, mid)
+        except Exception:
+            pass
 
 def get_pkg(pkg_id: int):
     return next((p for p in PACKAGES if p["id"] == pkg_id), None)
@@ -144,37 +161,44 @@ async def back_main(callback: CallbackQuery, state: FSMContext):
     )
     await callback.answer()
 
-# ── 🚀 Start button (member dashboard) ─────────────────────
+# ── 📋 MANU button (member dashboard) ──────────────────────
 @router.callback_query(F.data == "start_refresh")
 async def start_refresh(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     user = callback.from_user
     sub  = db.get_active_subscription(user.id)
-    # Always reset to the 3 main join buttons (+ Administration Access if admin)
-    await callback.message.edit_text(
+    await _wipe_chat(callback)
+    await callback.bot.send_message(
+        callback.message.chat.id,
         start_text(user.first_name, sub, user.username),
         parse_mode="Markdown",
-        reply_markup=join_options_kb(is_admin=_is_admin(user.id))
+        reply_markup=_start_keyboard(sub, user.id),
     )
     await callback.answer()
 
 # ── 🔄 Renew → PAID JOIN ───────────────────────────────────
 @router.callback_query(F.data == "renew_paid")
-async def renew_paid(callback: CallbackQuery):
-    await callback.message.edit_text(
+async def renew_paid(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await _wipe_chat(callback)
+    await callback.bot.send_message(
+        callback.message.chat.id,
         "💎 *PAID JOIN*\n\nChoose what you'd like to do below:",
         parse_mode="Markdown",
-        reply_markup=paid_menu_kb()
+        reply_markup=paid_menu_kb(),
     )
     await callback.answer()
 
 # ── 🔄 Renew → FOREX VIP JOIN ──────────────────────────────
 @router.callback_query(F.data == "renew_forex")
-async def renew_forex(callback: CallbackQuery):
-    await callback.message.edit_text(
+async def renew_forex(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await _wipe_chat(callback)
+    await callback.bot.send_message(
+        callback.message.chat.id,
         build_forex_text(),
         parse_mode="HTML",
-        reply_markup=forex_join_kb()
+        reply_markup=forex_join_kb(),
     )
     await callback.answer()
 

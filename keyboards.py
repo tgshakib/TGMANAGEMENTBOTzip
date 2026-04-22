@@ -10,6 +10,9 @@ def join_options_kb(is_admin: bool = False) -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(text="🔗 REFER JOIN",      callback_data="refer_join"),
+            InlineKeyboardButton(text="🏢 OFFLINE VIP JOIN", url="https://t.me/OAWHIDSHAKIB"),
+        ],
+        [
             InlineKeyboardButton(text="🤖 SOFTWARE & AI SIGNAL BOT BUY", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}"),
         ],
     ]
@@ -213,7 +216,7 @@ def member_start_kb(is_forex_sub: bool = False, is_admin: bool = False) -> Inlin
     rows = [
         [
             InlineKeyboardButton(text="🔄 Renew",  callback_data=renew_data),
-            InlineKeyboardButton(text="🚀 Start",  callback_data="start_refresh"),
+            InlineKeyboardButton(text="📋 MANU",   callback_data="start_refresh"),
         ],
     ]
     if is_admin:

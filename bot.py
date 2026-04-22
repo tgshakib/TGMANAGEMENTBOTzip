@@ -7,6 +7,7 @@ from config import BOT_TOKEN
 from handlers import user, admin, payment
 from scheduler import start_scheduler
 from admin_msg_tracker import AdminOutgoingTracker
+from user_msg_tracker import UserOutgoingTracker
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 async def main():
     bot = Bot(token=BOT_TOKEN)
     bot.session.middleware(AdminOutgoingTracker())
+    bot.session.middleware(UserOutgoingTracker())
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 
