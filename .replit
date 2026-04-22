@@ -1,0 +1,41 @@
+modules = ["python-3.11", "nodejs-20"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Bot"
+
+[[workflows.workflow]]
+name = "Start Bot"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python bot.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[userenv]
+
+[userenv.shared]
+SUPPORT_USERNAME = "@JAYITAUTOBO"
+ADMIN_ID = "5087570194"
+BOT_TOKEN = "8739925554:AAFWLKzq7K9MDuZKDbcuVX99XGLz9ioSowQ"
+
+[deployment]
+build = ["sh", "-c", "npm run build"]
+run = ["sh", "-c", "npm start"]
+deploymentTarget = "cloudrun"
