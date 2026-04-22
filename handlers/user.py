@@ -172,7 +172,7 @@ async def start_refresh(callback: CallbackQuery, state: FSMContext):
         callback.message.chat.id,
         start_text(user.first_name, sub, user.username),
         parse_mode="Markdown",
-        reply_markup=_start_keyboard(sub, user.id),
+        reply_markup=join_options_kb(is_admin=_is_admin(user.id)),
     )
     await callback.answer()
 

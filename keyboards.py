@@ -77,9 +77,8 @@ def forex_cancel_kb() -> InlineKeyboardMarkup:
 # ── Refer Join ─────────────────────────────────────────────
 def refer_join_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="💬 DM @OAWHIDSHAKIB",          url="https://t.me/OAWHIDSHAKIB")],
-        [InlineKeyboardButton(text="🤖 SOFTWARE & AI SIGNAL BOT BUY", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")],
-        [InlineKeyboardButton(text="⬅️ Back",                       callback_data="back_main")],
+        [InlineKeyboardButton(text="💬 DM @OAWHIDSHAKIB", url="https://t.me/OAWHIDSHAKIB")],
+        [InlineKeyboardButton(text="⬅️ Back",             callback_data="back_main")],
     ])
 
 # ── Package Selection ──────────────────────────────────────
