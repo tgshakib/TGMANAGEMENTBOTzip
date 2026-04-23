@@ -33,6 +33,11 @@ def _forex_unlocked_tier(user_id: int) -> int:
 
 
 def _has_offer(user_id: int) -> bool:
+    try:
+        if user_id == db.get_admin_id():
+            return False
+    except Exception:
+        pass
     return _paid_unlocked_tier(user_id) >= 3 or _forex_unlocked_tier(user_id) >= 3
 from user_msg_tracker import pop_all as _pop_user_msgs, add_id as _track_user_msg
 
@@ -58,7 +63,20 @@ def get_pkg(pkg_id: int):
     return next((p for p in PACKAGES if p["id"] == pkg_id), None)
 
 # ── Start screen text ──────────────────────────────────────
-def start_text(first_name: str, sub: dict | None, username: str | None = None) -> str:
+def start_text(first_name: str, sub: dict | None, username: str | None = None, is_admin: bool = False) -> str:
+    if is_admin:
+        return (
+            "☪️ *Assalamu Walaikum BOSS* 👋\n\n"
+            "*Welcome CEO - the TOP G*\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n"
+            "*HERE IS THE SVIP JOIN — OPTIONS AVAILABLE MEMBERS WILL SAW*\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            "💎 *PAID JOIN* — MTG / NON-MTG SVIP plans\n"
+            "💹 *FOREX VIP JOIN* — GOLDZILA SVIP plans\n"
+            "🔗 *REFER JOIN* — Join via referral link\n\n"
+            "👇 Choose an option below:"
+        )
+
     display = f"@{username}" if username else f"*{first_name}*"
 
     if sub:
@@ -167,7 +185,7 @@ async def cmd_start(message: Message, state: FSMContext):
     db.upsert_user(user.id, user.username, user.full_name)
     sub = db.get_active_subscription(user.id)
     await message.answer(
-        start_text(user.first_name, sub, user.username),
+        start_text(user.first_name, sub, user.username, is_admin=_is_admin(user.id)),
         parse_mode="Markdown",
         reply_markup=_start_keyboard(sub, user.id)
     )
@@ -179,7 +197,7 @@ async def back_main(callback: CallbackQuery, state: FSMContext):
     user = callback.from_user
     sub  = db.get_active_subscription(user.id)
     await callback.message.edit_text(
-        start_text(user.first_name, sub, user.username),
+        start_text(user.first_name, sub, user.username, is_admin=_is_admin(user.id)),
         parse_mode="Markdown",
         reply_markup=_start_keyboard(sub, user.id)
     )
@@ -194,7 +212,7 @@ async def start_refresh(callback: CallbackQuery, state: FSMContext):
     await _wipe_chat(callback)
     await callback.bot.send_message(
         callback.message.chat.id,
-        start_text(user.first_name, sub, user.username),
+        start_text(user.first_name, sub, user.username, is_admin=_is_admin(user.id)),
         parse_mode="Markdown",
         reply_markup=join_options_kb(is_admin=_is_admin(user.id), has_offer=_has_offer(user.id)),
     )
