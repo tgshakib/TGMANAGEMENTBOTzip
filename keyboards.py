@@ -263,7 +263,7 @@ def paid_offer_packages_kb(tier: int) -> InlineKeyboardMarkup:
             text=f"{duration}  ·  ${p['price']}",
             callback_data=f"opkg_{p['id']}"
         )])
-    buttons.append([InlineKeyboardButton(text="⬅️ Back", callback_data="my_offer")])
+    buttons.append([InlineKeyboardButton(text="⬅️ Back", callback_data="back_main")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
@@ -297,7 +297,7 @@ def forex_offer_packages_kb(tier: int) -> InlineKeyboardMarkup:
             callback_data=f"ofpkg_{p['id']}"
         )])
     buttons.append([InlineKeyboardButton(text="💬 Support", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")])
-    buttons.append([InlineKeyboardButton(text="⬅️ Back",    callback_data="my_offer")])
+    buttons.append([InlineKeyboardButton(text="⬅️ Back",    callback_data="back_main")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
