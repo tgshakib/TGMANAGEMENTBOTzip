@@ -76,5 +76,30 @@ PACKAGE_TIP_HTML = (
     "you will have 700/800$+ profit at the end of the month, in sha Allah. 💯💞"
 )
 
+# ── Loyalty Offer Packages (unlocked after 3 / 6 approved buys) ─
+PAID_OFFER_TIER3 = [
+    {"id": 101, "name": "🎁 OFFER · 1 Month",  "price": 45,  "days": 30, "description": "Loyalty Offer (3+ joins)"},
+    {"id": 102, "name": "🎁 OFFER · 2 Months", "price": 53,  "days": 60, "description": "Loyalty Offer (3+ joins)"},
+    {"id": 103, "name": "🎁 OFFER · 3 Months", "price": 110, "days": 90, "description": "Loyalty Offer (3+ joins)"},
+]
+PAID_OFFER_TIER6 = [
+    {"id": 104, "name": "🏆 LIFETIME OFFER · 1 Month", "price": 30,  "days": 30, "description": "Lifetime Loyalty Offer (6+ joins)"},
+    {"id": 102, "name": "🎁 OFFER · 2 Months",        "price": 53,  "days": 60, "description": "Loyalty Offer"},
+    {"id": 103, "name": "🎁 OFFER · 3 Months",        "price": 110, "days": 90, "description": "Loyalty Offer"},
+]
+
+FOREX_OFFER_TIER3 = [
+    {"id": 201, "name": "🎁 FOREX OFFER · 1 Month",  "price": 90,  "days": 30,  "label": "1 Month"},
+    {"id": 202, "name": "🎁 FOREX OFFER · 2 Months", "price": 119, "days": 60,  "label": "2 Months"},
+    {"id": 203, "name": "🎁 FOREX OFFER · 4 Months", "price": 150, "days": 120, "label": "4 Months"},
+    {"id": 204, "name": "🎁 FOREX OFFER · 6 Months", "price": 200, "days": 180, "label": "6 Months"},
+]
+FOREX_OFFER_TIER6 = [
+    {"id": 205, "name": "🏆 FOREX LIFETIME OFFER · 1 Month", "price": 68,  "days": 30,  "label": "1 Month"},
+    {"id": 202, "name": "🎁 FOREX OFFER · 2 Months",         "price": 119, "days": 60,  "label": "2 Months"},
+    {"id": 203, "name": "🎁 FOREX OFFER · 4 Months",         "price": 150, "days": 120, "label": "4 Months"},
+    {"id": 204, "name": "🎁 FOREX OFFER · 6 Months",         "price": 200, "days": 180, "label": "6 Months"},
+]
+
 # ── Scheduler reminder windows (handled internally in scheduler.py) ─
 REMINDER_DAYS_BEFORE = [7, 5, 3]

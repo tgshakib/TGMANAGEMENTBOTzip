@@ -249,6 +249,23 @@ def reject_payment(payment_id: int):
             UPDATE payments SET status='rejected', reviewed_at=? WHERE id=?
         """, (now, payment_id))
 
+def count_approved_payments(user_id: int, category: str) -> int:
+    """category: 'paid' (non-forex) or 'forex'"""
+    with get_conn() as conn:
+        if category == "forex":
+            row = conn.execute("""
+                SELECT COUNT(*) AS c FROM payments
+                WHERE user_id=? AND status='approved'
+                  AND package_name LIKE '%FOREX%'
+            """, (user_id,)).fetchone()
+        else:
+            row = conn.execute("""
+                SELECT COUNT(*) AS c FROM payments
+                WHERE user_id=? AND status='approved'
+                  AND package_name NOT LIKE '%FOREX%'
+            """, (user_id,)).fetchone()
+        return int(row["c"]) if row else 0
+
 def get_pending_payments() -> List[Dict]:
     with get_conn() as conn:
         rows = conn.execute("""

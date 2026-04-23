@@ -5,12 +5,35 @@ from aiogram.fsm.context import FSMContext
 from datetime import datetime
 
 import database as db
-from config import PACKAGES, SUPPORT_USERNAME, FOREX_VIP_PACKAGES, PACKAGE_TIP_HTML
+from config import (
+    PACKAGES, SUPPORT_USERNAME, FOREX_VIP_PACKAGES, PACKAGE_TIP_HTML,
+    PAID_OFFER_TIER3, PAID_OFFER_TIER6,
+    FOREX_OFFER_TIER3, FOREX_OFFER_TIER6,
+)
 from keyboards import (
     join_options_kb, paid_menu_kb, refer_join_kb,
     packages_kb, proceed_payment_kb, forex_join_kb, forex_proceed_payment_kb,
     member_start_kb,
+    my_offer_chooser_kb, paid_offer_packages_kb, forex_offer_packages_kb,
 )
+
+
+def _paid_unlocked_tier(user_id: int) -> int:
+    n = db.count_approved_payments(user_id, "paid")
+    if n >= 6: return 6
+    if n >= 3: return 3
+    return 0
+
+
+def _forex_unlocked_tier(user_id: int) -> int:
+    n = db.count_approved_payments(user_id, "forex")
+    if n >= 6: return 6
+    if n >= 3: return 3
+    return 0
+
+
+def _has_offer(user_id: int) -> bool:
+    return _paid_unlocked_tier(user_id) >= 3 or _forex_unlocked_tier(user_id) >= 3
 from user_msg_tracker import pop_all as _pop_user_msgs, add_id as _track_user_msg
 
 router = Router()
@@ -129,11 +152,12 @@ def _is_admin(user_id: int) -> bool:
         return False
 
 def _start_keyboard(sub, user_id: int = 0):
+    has_offer = _has_offer(user_id)
     if sub and "FOREX" in sub.get("package_name", ""):
-        return member_start_kb(is_forex_sub=True, is_admin=_is_admin(user_id))
+        return member_start_kb(is_forex_sub=True, is_admin=_is_admin(user_id), has_offer=has_offer)
     elif sub:
-        return member_start_kb(is_forex_sub=False, is_admin=_is_admin(user_id))
-    return join_options_kb(is_admin=_is_admin(user_id))
+        return member_start_kb(is_forex_sub=False, is_admin=_is_admin(user_id), has_offer=has_offer)
+    return join_options_kb(is_admin=_is_admin(user_id), has_offer=has_offer)
 
 # ── /start ─────────────────────────────────────────────────
 @router.message(CommandStart())
@@ -172,7 +196,7 @@ async def start_refresh(callback: CallbackQuery, state: FSMContext):
         callback.message.chat.id,
         start_text(user.first_name, sub, user.username),
         parse_mode="Markdown",
-        reply_markup=join_options_kb(is_admin=_is_admin(user.id)),
+        reply_markup=join_options_kb(is_admin=_is_admin(user.id), has_offer=_has_offer(user.id)),
     )
     await callback.answer()
 
@@ -234,6 +258,108 @@ async def forex_join(callback: CallbackQuery):
         reply_markup=forex_join_kb()
     )
     await callback.answer()
+
+# ── 🎁 MY OFFER ───────────────────────────────────────────
+def _paid_offer_text(tier: int) -> str:
+    pkgs = PAID_OFFER_TIER6 if tier >= 6 else PAID_OFFER_TIER3
+    badge = "🏆 <b>LIFETIME LOYALTY OFFER</b>" if tier >= 6 else "🎁 <b>LOYALTY OFFER</b>"
+    lines = [
+        badge,
+        "💎 <b>PAID VIP — Your Personal Pricing</b>",
+        "━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+    for p in pkgs:
+        duration = p["name"].split("·")[-1].strip()
+        lines.append(f"  {duration:<14}  <b>${p['price']}</b>")
+    lines += [
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        "👇 Tap a plan to subscribe:",
+    ]
+    return "\n".join(lines)
+
+
+def _forex_offer_text(tier: int) -> str:
+    pkgs = FOREX_OFFER_TIER6 if tier >= 6 else FOREX_OFFER_TIER3
+    badge = "🏆 <b>LIFETIME LOYALTY OFFER</b>" if tier >= 6 else "🎁 <b>LOYALTY OFFER</b>"
+    lines = [
+        badge,
+        "💹 <b>FOREX VIP — Your Personal Pricing</b>",
+        "━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+    for p in pkgs:
+        lines.append(f"  {p['label']:<14}  <b>${p['price']}</b>")
+    lines += [
+        "━━━━━━━━━━━━━━━━━━━━━━",
+        "👇 Tap a plan to subscribe:",
+    ]
+    return "\n".join(lines)
+
+
+@router.callback_query(F.data == "my_offer")
+async def my_offer_entry(callback: CallbackQuery):
+    uid = callback.from_user.id
+    paid_tier  = _paid_unlocked_tier(uid)
+    forex_tier = _forex_unlocked_tier(uid)
+
+    if paid_tier == 0 and forex_tier == 0:
+        await callback.answer("You haven't unlocked My Offer yet.", show_alert=True)
+        return
+
+    # Only one category unlocked → jump straight in
+    if paid_tier > 0 and forex_tier == 0:
+        await callback.message.edit_text(
+            _paid_offer_text(paid_tier),
+            parse_mode="HTML",
+            reply_markup=paid_offer_packages_kb(paid_tier)
+        )
+        await callback.answer()
+        return
+    if forex_tier > 0 and paid_tier == 0:
+        await callback.message.edit_text(
+            _forex_offer_text(forex_tier),
+            parse_mode="HTML",
+            reply_markup=forex_offer_packages_kb(forex_tier)
+        )
+        await callback.answer()
+        return
+
+    # Both unlocked → choose category
+    await callback.message.edit_text(
+        "🎁 <b>My Offer</b>\n\nYou've unlocked loyalty pricing in both categories.\n"
+        "Choose which one you'd like to view:",
+        parse_mode="HTML",
+        reply_markup=my_offer_chooser_kb(paid_tier > 0, forex_tier > 0)
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "my_offer_paid")
+async def my_offer_paid(callback: CallbackQuery):
+    tier = _paid_unlocked_tier(callback.from_user.id)
+    if tier == 0:
+        await callback.answer("Not unlocked yet.", show_alert=True)
+        return
+    await callback.message.edit_text(
+        _paid_offer_text(tier),
+        parse_mode="HTML",
+        reply_markup=paid_offer_packages_kb(tier)
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "my_offer_forex")
+async def my_offer_forex(callback: CallbackQuery):
+    tier = _forex_unlocked_tier(callback.from_user.id)
+    if tier == 0:
+        await callback.answer("Not unlocked yet.", show_alert=True)
+        return
+    await callback.message.edit_text(
+        _forex_offer_text(tier),
+        parse_mode="HTML",
+        reply_markup=forex_offer_packages_kb(tier)
+    )
+    await callback.answer()
+
 
 # ── 🎁 MONTHLY JOIN OFFERS ────────────────────────────────
 @router.callback_query(F.data == "monthly_offers")

@@ -6,7 +6,10 @@ from aiogram.fsm.state import State, StatesGroup
 from datetime import datetime, timedelta
 
 import database as db
-from config import PACKAGES, FOREX_VIP_PACKAGES, GROUP_ID
+from config import (
+    PACKAGES, FOREX_VIP_PACKAGES, GROUP_ID,
+    PAID_OFFER_TIER3, PAID_OFFER_TIER6, FOREX_OFFER_TIER3, FOREX_OFFER_TIER6,
+)
 from keyboards import (
     admin_panel_kb, back_admin_kb, transfer_confirm_kb,
     active_members_actions_kb, ban_member_list_kb, ban_confirm_kb,
@@ -29,10 +32,12 @@ async def _track_admin_incoming_mw(handler, event: Message, data):
     return await handler(event, data)
 
 def get_pkg(pkg_id: int):
-    return next((p for p in PACKAGES if p["id"] == pkg_id), None)
+    pool = PACKAGES + PAID_OFFER_TIER3 + PAID_OFFER_TIER6
+    return next((p for p in pool if p["id"] == pkg_id), None)
 
 def get_forex_pkg_by_name(name: str):
-    return next((p for p in FOREX_VIP_PACKAGES if p["name"] == name), None)
+    pool = FOREX_VIP_PACKAGES + FOREX_OFFER_TIER3 + FOREX_OFFER_TIER6
+    return next((p for p in pool if p["name"] == name), None)
 
 def is_forex_payment(package_name: str) -> bool:
     return "FOREX" in package_name

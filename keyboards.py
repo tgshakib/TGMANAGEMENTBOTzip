@@ -1,8 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from config import PACKAGES, FOREX_VIP_PACKAGES, SUPPORT_USERNAME
+from config import (
+    PACKAGES, FOREX_VIP_PACKAGES, SUPPORT_USERNAME,
+    PAID_OFFER_TIER3, PAID_OFFER_TIER6,
+    FOREX_OFFER_TIER3, FOREX_OFFER_TIER6,
+)
 
 # ── Start / Join Options ───────────────────────────────────
-def join_options_kb(is_admin: bool = False) -> InlineKeyboardMarkup:
+def join_options_kb(is_admin: bool = False, has_offer: bool = False) -> InlineKeyboardMarkup:
     rows = [
         [
             InlineKeyboardButton(text="💎 PAID JOIN",       callback_data="paid_join"),
@@ -11,6 +15,12 @@ def join_options_kb(is_admin: bool = False) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(text="🎁 MONTHLY JOIN OFFERS", callback_data="monthly_offers"),
         ],
+    ]
+    if has_offer:
+        rows.append([
+            InlineKeyboardButton(text="🎁 MY OFFER", callback_data="my_offer"),
+        ])
+    rows += [
         [
             InlineKeyboardButton(text="🔗 REFER JOIN",      callback_data="refer_join"),
             InlineKeyboardButton(text="🏢 OFFLINE VIP JOIN", url="https://t.me/OAWHIDSHAKIB"),
@@ -216,19 +226,100 @@ def back_admin_kb() -> InlineKeyboardMarkup:
     ])
 
 # ── Member dashboard (active sub) — 2 buttons only ────────
-def member_start_kb(is_forex_sub: bool = False, is_admin: bool = False) -> InlineKeyboardMarkup:
+def member_start_kb(is_forex_sub: bool = False, is_admin: bool = False, has_offer: bool = False) -> InlineKeyboardMarkup:
     renew_data = "renew_forex" if is_forex_sub else "renew_paid"
-    rows = [
-        [
-            InlineKeyboardButton(text="🔄 Renew",  callback_data=renew_data),
-            InlineKeyboardButton(text="📋 MANU",   callback_data="start_refresh"),
-        ],
+    first_row = [
+        InlineKeyboardButton(text="🔄 Renew",  callback_data=renew_data),
+        InlineKeyboardButton(text="📋 MANU",   callback_data="start_refresh"),
     ]
+    if has_offer:
+        first_row.append(InlineKeyboardButton(text="🎁 MY OFFER", callback_data="my_offer"))
+    rows = [first_row]
     if is_admin:
         rows.append([
             InlineKeyboardButton(text="🛡️ ADMINISTRATION ACCESS", callback_data="admin_panel"),
         ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── My Offer: category chooser (when both paid & forex unlocked) ──
+def my_offer_chooser_kb(paid_unlocked: bool, forex_unlocked: bool) -> InlineKeyboardMarkup:
+    rows = []
+    if paid_unlocked:
+        rows.append([InlineKeyboardButton(text="💎 PAID VIP — My Offer", callback_data="my_offer_paid")])
+    if forex_unlocked:
+        rows.append([InlineKeyboardButton(text="💹 FOREX VIP — My Offer", callback_data="my_offer_forex")])
+    rows.append([InlineKeyboardButton(text="⬅️ Back", callback_data="back_main")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+# ── My Offer: paid offer packages ─────────────────────────
+def paid_offer_packages_kb(tier: int) -> InlineKeyboardMarkup:
+    pkgs = PAID_OFFER_TIER6 if tier >= 6 else PAID_OFFER_TIER3
+    buttons = []
+    for p in pkgs:
+        duration = p["name"].split("·")[-1].strip()
+        buttons.append([InlineKeyboardButton(
+            text=f"{duration}  ·  ${p['price']}",
+            callback_data=f"opkg_{p['id']}"
+        )])
+    buttons.append([InlineKeyboardButton(text="⬅️ Back", callback_data="my_offer")])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def paid_offer_proceed_kb(pkg_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 Proceed to Payment", callback_data=f"opay_{pkg_id}")],
+        [InlineKeyboardButton(text="⬅️ Back to Offers",     callback_data="my_offer_paid")],
+    ])
+
+
+def paid_offer_payment_instructions_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📸 CHECK MY SCREENSHOT", callback_data="ocheck_screenshot")],
+        [InlineKeyboardButton(text="❌ Cancel",               callback_data="my_offer_paid")],
+    ])
+
+
+def paid_offer_cancel_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancel", callback_data="my_offer_paid")]
+    ])
+
+
+# ── My Offer: forex offer packages ────────────────────────
+def forex_offer_packages_kb(tier: int) -> InlineKeyboardMarkup:
+    pkgs = FOREX_OFFER_TIER6 if tier >= 6 else FOREX_OFFER_TIER3
+    buttons = []
+    for p in pkgs:
+        buttons.append([InlineKeyboardButton(
+            text=f"{p['label']}  ·  ${p['price']}",
+            callback_data=f"ofpkg_{p['id']}"
+        )])
+    buttons.append([InlineKeyboardButton(text="💬 Support", url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")])
+    buttons.append([InlineKeyboardButton(text="⬅️ Back",    callback_data="my_offer")])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def forex_offer_proceed_kb(pkg_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 Proceed to Payment", callback_data=f"ofpay_{pkg_id}")],
+        [InlineKeyboardButton(text="⬅️ Back to Offers",     callback_data="my_offer_forex")],
+    ])
+
+
+def forex_offer_payment_instructions_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📸 CHECK MY SCREENSHOT", callback_data="ofcheck_screenshot")],
+        [InlineKeyboardButton(text="💬 Support",              url=f"https://t.me/{SUPPORT_USERNAME.lstrip('@')}")],
+        [InlineKeyboardButton(text="❌ Cancel",               callback_data="my_offer_forex")],
+    ])
+
+
+def forex_offer_cancel_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="❌ Cancel", callback_data="my_offer_forex")]
+    ])
 
 # ── Aliases ────────────────────────────────────────────────
 def cancel_kb() -> InlineKeyboardMarkup:
