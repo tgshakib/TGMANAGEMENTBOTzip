@@ -9,6 +9,9 @@ def join_options_kb(is_admin: bool = False) -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="💹 FOREX VIP JOIN",  callback_data="forex_join"),
         ],
         [
+            InlineKeyboardButton(text="🎁 MONTHLY JOIN OFFERS", callback_data="monthly_offers"),
+        ],
+        [
             InlineKeyboardButton(text="🔗 REFER JOIN",      callback_data="refer_join"),
             InlineKeyboardButton(text="🏢 OFFLINE VIP JOIN", url="https://t.me/OAWHIDSHAKIB"),
         ],

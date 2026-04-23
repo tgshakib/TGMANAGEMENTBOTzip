@@ -235,6 +235,31 @@ async def forex_join(callback: CallbackQuery):
     )
     await callback.answer()
 
+# ── 🎁 MONTHLY JOIN OFFERS ────────────────────────────────
+@router.callback_query(F.data == "monthly_offers")
+async def monthly_offers(callback: CallbackQuery):
+    text = (
+        "<b>Exclusive Lifetime discount Benefits for ACTIVE Members!</b>\n\n"
+        "<b>Join our VIP program three times or more using our bot, and unlock "
+        "incredible discounts on your monthly membership package for life!</b>\n\n"
+        "<b>For Binary Traders:</b>\n"
+        "<b>• Join VIP 3 Times: Unlock VIP at just $45 per month</b>\n\n"
+        "<b>(originally $52/month).</b>\n\n"
+        "<b>• Join VIP 6 Times: Unlock VIP at just $30 per month. lifetime</b>\n\n"
+        "<b>For Forex Traders:</b>\n"
+        "<b>• Join VIP 3 Times: Unlock VIP at just $90 per month Lifetime</b>\n\n"
+        "<b>(originally $199/1month).</b>\n\n"
+        "<b>• Join VIP 6 Times: Unlock VIP at just $68 per month. ( Lifetime)</b>\n\n"
+        "<b>Take advantage of this amazing offer and secure your lifetime Discount today!</b>"
+    )
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💬 Contact Admin", url="https://t.me/OAWHIDSHAKIB")],
+        [InlineKeyboardButton(text="⬅️ Back", callback_data="back_main")],
+    ])
+    await callback.message.edit_text(text, parse_mode="HTML", reply_markup=kb)
+    await callback.answer()
+
 # ── REFER JOIN ─────────────────────────────────────────────
 @router.callback_query(F.data == "refer_join")
 async def refer_join(callback: CallbackQuery):
