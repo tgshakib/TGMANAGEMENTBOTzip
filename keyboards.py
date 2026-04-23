@@ -168,6 +168,9 @@ def admin_panel_kb() -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="🔄 Transfer Admin",    callback_data="admin_transfer"),
         ],
         [
+            InlineKeyboardButton(text="⬅️ Back",              callback_data="back_main"),
+        ],
+        [
             InlineKeyboardButton(text="🧹 CLOSE ADMIN PANEL", callback_data="admin_close"),
         ],
     ])
